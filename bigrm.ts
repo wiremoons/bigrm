@@ -31,7 +31,8 @@
 //--------------------------------
 // MODULE IMPORTS
 //--------------------------------
-import {isString} from "https://deno.land/x/deno_mod@0.6.1/mod.ts";
+import {isString, isNumber} from "https://deno.land/x/deno_mod@0.6.1/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.106.0/datetime/mod.ts";
 
 //--------------------------------
 // LOCALSTORAGE FUNCTIONS
@@ -112,9 +113,64 @@ function askUserForApiKey():string | undefined {
   return undefined;
 }
 
+/** Convert epoch date to date and time for display in output as a string */
+function getDisplayDateTime(epochTime: number): string {
+  //console.log(`Epoch time for conversion to data and time: ${epochTime}`);
+  let dateUTC: Date;
+  if (isNumber(epochTime)) {
+    dateUTC = new Date(epochTime * 1000);
+    //console.log(`Converted date to UTC format: ${dateUTC}`);
+    return toIMF(new Date(dateUTC));
+    //console.log(`Final data and time format: ${toIMF(new Date(dateUTC))}`);
+  } else {
+    return "UNKNOWN";
+  }
+}
+
+/** Convert an epoch time to a formatted time only (no date) for display in output as a string */
+function getDisplayTime(epochTime: number): string {
+  //console.log(`Epoch time for conversion to a date: ${epochTime}`);
+  let dateUTC: Date;
+  if (isNumber(epochTime)) {
+    dateUTC = new Date(epochTime * 1000);
+    //console.log(`Converted date to UTC format: ${dateUTC}`);
+    //return date only using `formatString`
+    return format(dateUTC, "HH:mm");
+  } else {
+    return "UNKNOWN";
+  }
+}
+
+
 //--------------------------------
 // APPLICATION FUNCTIONS
 //--------------------------------
+
+
+/**
+ * Obtain OpenWeather forecast JSON data
+ */
+async function getWeatherJson(owUrl: string): Promise<string> {
+    const res = await fetch(owUrl);
+    const owJson = await res.json();
+    //console.log(owJson);
+
+    return(`
+CURRENT  WEATHER  FORECAST  DATA
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+ » Weather timezone     : ${owJson.timezone}
+ » Weather place name   : Barry, UK
+ » Latitude & longitude : ${owJson.lat} °N, ${owJson.lon} °W
+ » Forecast Date        : ${getDisplayDateTime(owJson.current.dt)}
+ » Sunrise              : ${getDisplayTime(owJson.current.sunrise)}
+ » Sunset               : ${getDisplayTime(owJson.current.sunset)}
+
+» Weather Currently
+    Wind Speed          : ${owJson.current.wind_speed} mph
+    UV Index            : ${owJson.current.uvi}
+    Temperature         : ${owJson.current.temp}°C feels like: ${owJson.current.feels_like}°C
+    `);
+}
 
 //--------------------------------
 // MAIN
@@ -122,15 +178,19 @@ function askUserForApiKey():string | undefined {
 if (import.meta.main) {
   const owApiKey = getApiKey();
   if (!isString(owApiKey)) {
-      console.error("Unable to proceed without an OpenWeather API key.");
-      console.log("Free or subscription API key options are available. Request an OpenWeather API key here: https://openweathermap.org/price");
+      console.error("\nERROR: Unable to proceed without an OpenWeather API key.");
+      console.log("\nFree or subscription API key options are available.\n" +
+          "Request an OpenWeather API key here: https://openweathermap.org/price");
       Deno.exit(1);
   }
   // debug code
-  console.log(`Current localStorage API key : '${owApiKey}'`);
+  //console.log(`Current localStorage API key : '${owApiKey}'`);
   // use below to remove API key from localStorage while testing
   //delApiKey() ? console.log("API Key removed") : console.log("API Key removal failed");
-  console.log("good path is running....");
 
+  // create the final weather request url
+  const owUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
 
+  console.log(`${await getWeatherJson(owUrl)}`);
+  
 }
