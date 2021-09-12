@@ -3,6 +3,6 @@
         "openweathermap"
     ],
     "deno.enable": true,
-    "deno.lint": true,
+    "deno.lint": false,
     "deno.unstable": false
 }
