@@ -31,7 +31,7 @@
 //--------------------------------
 // MODULE IMPORTS
 //--------------------------------
-import {isString, isNumber} from "https://deno.land/x/deno_mod@0.6.1/mod.ts";
+import {isString, isNumber} from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
 import { format, toIMF } from "https://deno.land/std@0.106.0/datetime/mod.ts";
 
 //--------------------------------
@@ -142,6 +142,36 @@ function getDisplayTime(epochTime: number): string {
 }
 
 
+/** Convert epoch date to day of the week name as a string */
+function getDayName(epochTime: number): string {
+  //console.log(`Epoch time for conversion to data and time: ${epochTime}`);
+  let dateUTC: Date;
+  if (isNumber(epochTime)) {
+    dateUTC = new Date(epochTime * 1000);
+    //console.log(`Converted date to UTC format: ${dateUTC}`);
+    return (new Intl.DateTimeFormat('en-GB', { weekday: 'long'}).format(dateUTC)).toString();
+    //console.log(`Final data and time format: ${toIMF(new Date(dateUTC))}`);
+  } else {
+    return "UNKNOWN";
+  }
+}
+
+
+// function extractDaily(owJson:any):string | undefined {
+//   if (!isString(owJson)) return undefined;
+//
+//   const dailyData = owJson?.daily.map((entry)=>{
+//     if (entry.dt === undefined  ) return undefined;
+//
+//     const dailyDT = getDayName(entry.dt);
+//     return `On ${dialyDT} expect: ${entry.dt.clouds}`;
+//   });
+//
+//   return dailyData.toString();
+//
+// }
+
+
 //--------------------------------
 // APPLICATION FUNCTIONS
 //--------------------------------
@@ -155,6 +185,8 @@ async function getWeatherJson(owUrl: string): Promise<string> {
     const owJson = await res.json();
     //console.log(owJson);
 
+  const owAlerts:number = owJson.alerts ? owJson.alerts.length : 0;
+
     return(`
 CURRENT  WEATHER  FORECAST  DATA
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -165,10 +197,26 @@ CURRENT  WEATHER  FORECAST  DATA
  » Sunrise              : ${getDisplayTime(owJson.current.sunrise)}
  » Sunset               : ${getDisplayTime(owJson.current.sunset)}
 
-» Weather Currently
-    Wind Speed          : ${owJson.current.wind_speed} mph
+ » Weather Currently
+    Wind Speed          : ${owJson.current.wind_speed} mph 
     UV Index            : ${owJson.current.uvi}
-    Temperature         : ${owJson.current.temp}°C feels like: ${owJson.current.feels_like}°C
+    Humidity            : ${owJson.current.humidity} %
+    Cloud Cover         : ${owJson.current.clouds} %
+    Average Visibility  : ${owJson.current.visibility.toLocaleString()} metres
+    Temperature         : ${owJson.current.temp.toFixed(1)}°C feels like: ${owJson.current.feels_like.toFixed((1))}°C
+    Description         : ${owJson.current.weather[0].description ?? "none available"}
+    
+ » Weather Outlook
+    ${owJson.daily.map((entry:any)=>{
+      let result = `On ${getDayName(entry.dt)} expect `;
+      result += `${entry.weather[0].description ?? "none available"} `;
+      result += `with wind at ${entry.wind_speed ?? "UNKNOWN"} mph and `;
+      result += `temperature of ${entry.temp.day ?? "UNKNOWN"}°C`;
+      return result;
+    }).join("\n    ")}
+    
+ » Weather Alerts    
+    Alerts issued: ${owAlerts.toString()}
     `);
 }
 
