@@ -38,27 +38,29 @@ import {
 } from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
 import { format, toIMF } from "https://deno.land/std@0.107.0/datetime/mod.ts";
 import { parse } from "https://deno.land/std@0.107.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.107.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
 //--------------------------------
 
-/** Define the command line argument options to be used */
+/** Define the command line argument switches and options to be used */
 const cliOpts = {
   default: { h: false, v: false },
   alias: { h: "help", v: "version" },
-  unknown: showHelp,
+  stopEarly: true,
+  unknown: showUnknown,
 };
 
-/** define optins for `cliVersion()` function for application */
+/** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "1.0.0",
+  version: "0.4.2",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
 };
 
-/** obtain any command line arguments and exec them */
+/** obtain any command line arguments and exec them as needed */
 async function getCliArgs() {
   //console.log(parse(Deno.args,cliOpts));
   const cliArgs = parse(Deno.args, cliOpts);
@@ -75,9 +77,25 @@ async function getCliArgs() {
   }
 }
 
+/** Function defined in `cliOpts` so is automatically by `parse()` if an unknown command line option
+ * is given by the user.
+ * @code showUnknown(arg: string, k?: string, v?: unknown)
+ */
+function showUnknown(arg: string) {
+  console.error(`\nERROR: Unknown argument: '${arg}'`);
+  showHelp();
+  Deno.exit(1);
+}
+
 /** Help display for application called when unknown command lines options are entered */
 function showHelp() {
-  console.log("You got some help!");
+  console.log(`
+Usage: ${getAppName()} [switches] [arguments]
+
+[Switches]       [Arguments]   [Default Value]   [Description]               
+-h, --help                          false        display help information
+-v, --version                       false        display program version
+`);
 }
 
 //--------------------------------
@@ -200,6 +218,10 @@ function getDayName(epochTime: number): string {
   } else {
     return "UNKNOWN";
   }
+}
+
+function getAppName(): string {
+  return `${basename(Deno.mainModule) ?? "UNKNOWN"}`;
 }
 
 // function extractDaily(owJson:any):string | undefined {
