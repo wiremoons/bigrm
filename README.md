@@ -52,7 +52,7 @@ chmod 755 bigrm.ts
 The program can be run with _Deno_ using the command:
 
 ```console
-deno run --quiet --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm ./bigrm.ts
+deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm ./bigrm.ts
 ```
 
 NOTE: the ability to compile the program is not possible due to
@@ -60,7 +60,7 @@ NOTE: the ability to compile the program is not possible due to
 fixed, the program can be compiled with _Deno_ using the command:
 
 ```console
-deno compile --quiet --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm ./bigrm.ts
+deno compile --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm ./bigrm.ts
 ```
 
 ### Installing Deno
