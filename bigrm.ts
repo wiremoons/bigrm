@@ -311,7 +311,8 @@ if (import.meta.main) {
   //delApiKey() ? console.log("API Key removed") : console.log("API Key removal failed");
 
   // create the final weather request url
-  //const owUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
+  const owUrl =
+    `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
 
-  //console.log(`${await getWeatherJson(owUrl)}`);
+  console.log(`${await getWeatherJson(owUrl)}`);
 }
