@@ -99,7 +99,7 @@ Usage: ${getAppName()} [switches] [arguments]
 }
 
 //--------------------------------
-// LOCALSTORAGE FUNCTIONS
+// LOCAL STORAGE FUNCTIONS
 //--------------------------------
 
 /**
@@ -219,7 +219,7 @@ function getDayName(epochTime: number): string {
     return "UNKNOWN";
   }
 }
-
+/** Return the name of the currently running program without the path included. */
 function getAppName(): string {
   return `${basename(Deno.mainModule) ?? "UNKNOWN"}`;
 }
