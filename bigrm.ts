@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --quiet --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
+#!/usr/bin/env -S deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
 /**
  * @file bigrm.ts
  * @brief Obtain the latest weather forecast from OpenWeather.
@@ -14,7 +14,7 @@
  * Application is written in TypeScript for use with the Deno runtime: https://deno.land/
  *
  * @note The program can be run with Deno using the command:
- * @code deno run --quiet --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
+ * @code deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
  */
 
 /**
@@ -31,8 +31,54 @@
 //--------------------------------
 // MODULE IMPORTS
 //--------------------------------
-import {isString, isNumber} from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.106.0/datetime/mod.ts";
+import {
+  cliVersion,
+  isNumber,
+  isString,
+} from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.107.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.107.0/flags/mod.ts";
+
+//--------------------------------
+// COMMAND LINE ARGS FUNCTIONS
+//--------------------------------
+
+/** Define the command line argument options to be used */
+const cliOpts = {
+  default: { h: false, v: false },
+  alias: { h: "help", v: "version" },
+  unknown: showHelp,
+};
+
+/** define optins for `cliVersion()` function for application */
+const versionOptions = {
+  version: "1.0.0",
+  copyrightName: "Simon Rowe",
+  licenseUrl: "https://github.com/wiremoons/bigrm/",
+  crYear: "2021",
+};
+
+/** obtain any command line arguments and exec them */
+async function getCliArgs() {
+  //console.log(parse(Deno.args,cliOpts));
+  const cliArgs = parse(Deno.args, cliOpts);
+
+  if (cliArgs.help) {
+    showHelp();
+    Deno.exit(0);
+  }
+
+  if (cliArgs.version) {
+    const versionData = await cliVersion(versionOptions);
+    console.log(versionData);
+    Deno.exit(0);
+  }
+}
+
+/** Help display for application called when unknown command lines options are entered */
+function showHelp() {
+  console.log("You got some help!");
+}
 
 //--------------------------------
 // LOCALSTORAGE FUNCTIONS
@@ -98,10 +144,9 @@ function getApiKey(): string | undefined {
  * Request the users enters their OpenWeather API key and if valid store it in `localStorage`
  * @returns owApiKey as the users OpenWeather API key or `undefined` on failure
  */
-function askUserForApiKey():string | undefined {
-
+function askUserForApiKey(): string | undefined {
   if (confirm(`Do you have a valid OpenWeather API key [y/N] ?`)) {
-    let owApiKey = prompt('Please enter your API key:');
+    let owApiKey = prompt("Please enter your API key:");
     if (isString(owApiKey) && owApiKey.length > 0 && setApiKeyId(owApiKey)) {
       console.log(`'${owApiKey}' stored for future use.`);
       return owApiKey;
@@ -141,7 +186,6 @@ function getDisplayTime(epochTime: number): string {
   }
 }
 
-
 /** Convert epoch date to day of the week name as a string */
 function getDayName(epochTime: number): string {
   //console.log(`Epoch time for conversion to data and time: ${epochTime}`);
@@ -149,13 +193,14 @@ function getDayName(epochTime: number): string {
   if (isNumber(epochTime)) {
     dateUTC = new Date(epochTime * 1000);
     //console.log(`Converted date to UTC format: ${dateUTC}`);
-    return (new Intl.DateTimeFormat('en-GB', { weekday: 'long'}).format(dateUTC)).toString();
+    return (new Intl.DateTimeFormat("en-GB", { weekday: "long" }).format(
+      dateUTC,
+    )).toString();
     //console.log(`Final data and time format: ${toIMF(new Date(dateUTC))}`);
   } else {
     return "UNKNOWN";
   }
 }
-
 
 // function extractDaily(owJson:any):string | undefined {
 //   if (!isString(owJson)) return undefined;
@@ -171,23 +216,21 @@ function getDayName(epochTime: number): string {
 //
 // }
 
-
 //--------------------------------
 // APPLICATION FUNCTIONS
 //--------------------------------
-
 
 /**
  * Obtain OpenWeather forecast JSON data
  */
 async function getWeatherJson(owUrl: string): Promise<string> {
-    const res = await fetch(owUrl);
-    const owJson = await res.json();
-    //console.log(owJson);
+  const res = await fetch(owUrl);
+  const owJson = await res.json();
+  //console.log(owJson);
 
-  const owAlerts:number = owJson.alerts ? owJson.alerts.length : 0;
+  const owAlerts: number = owJson.alerts ? owJson.alerts.length : 0;
 
-    return(`
+  return (`
 CURRENT  WEATHER  FORECAST  DATA
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
  » Weather timezone     : ${owJson.timezone}
@@ -203,17 +246,22 @@ CURRENT  WEATHER  FORECAST  DATA
     Humidity            : ${owJson.current.humidity} %
     Cloud Cover         : ${owJson.current.clouds} %
     Average Visibility  : ${owJson.current.visibility.toLocaleString()} metres
-    Temperature         : ${owJson.current.temp.toFixed(1)}°C feels like: ${owJson.current.feels_like.toFixed((1))}°C
-    Description         : ${owJson.current.weather[0].description ?? "none available"}
+    Temperature         : ${owJson.current.temp.toFixed(1)}°C feels like: ${
+    owJson.current.feels_like.toFixed((1))
+  }°C
+    Description         : ${owJson.current.weather[0].description ??
+    "none available"}
     
  » Weather Outlook
-    ${owJson.daily.map((entry:any)=>{
+    ${
+    owJson.daily.map((entry: any) => {
       let result = `On ${getDayName(entry.dt)} expect `;
       result += `${entry.weather[0].description ?? "none available"} `;
       result += `with wind at ${entry.wind_speed ?? "UNKNOWN"} mph and `;
       result += `temperature of ${entry.temp.day ?? "UNKNOWN"}°C`;
       return result;
-    }).join("\n    ")}
+    }).join("\n    ")
+  }
     
  » Weather Alerts    
     Alerts issued: ${owAlerts.toString()}
@@ -224,12 +272,16 @@ CURRENT  WEATHER  FORECAST  DATA
 // MAIN
 //--------------------------------
 if (import.meta.main) {
+  if (Deno.args.length > 0) await getCliArgs();
+
   const owApiKey = getApiKey();
   if (!isString(owApiKey)) {
-      console.error("\nERROR: Unable to proceed without an OpenWeather API key.");
-      console.log("\nFree or subscription API key options are available.\n" +
-          "Request an OpenWeather API key here: https://openweathermap.org/price");
-      Deno.exit(1);
+    console.error("\nERROR: Unable to proceed without an OpenWeather API key.");
+    console.log(
+      "\nFree or subscription API key options are available.\n" +
+        "Request an OpenWeather API key here: https://openweathermap.org/price",
+    );
+    Deno.exit(1);
   }
   // debug code
   //console.log(`Current localStorage API key : '${owApiKey}'`);
@@ -237,8 +289,7 @@ if (import.meta.main) {
   //delApiKey() ? console.log("API Key removed") : console.log("API Key removal failed");
 
   // create the final weather request url
-  const owUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
+  //const owUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
 
-  console.log(`${await getWeatherJson(owUrl)}`);
-  
+  //console.log(`${await getWeatherJson(owUrl)}`);
 }
