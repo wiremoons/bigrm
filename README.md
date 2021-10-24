@@ -8,6 +8,8 @@ Deno app to obtain the latest weather forecast for a given location on earth.
 
 `bigrm` : _big room_ as in outside.
 
+A screenshot of the application showing weather forecast data is below:
+
 ![bigrm.ts screenshot](images/screen1.png)
 
 ## Main features of bigrm
