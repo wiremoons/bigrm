@@ -170,7 +170,7 @@ function getApiKey(): string | undefined {
  */
 function askUserForApiKey(): string | undefined {
   if (confirm(`Do you have a valid OpenWeather API key [y/N] ?`)) {
-    let owApiKey = prompt("Please enter your API key:");
+    const owApiKey = prompt("Please enter your API key:");
     if (isString(owApiKey) && owApiKey.length > 0 && setApiKeyId(owApiKey)) {
       console.log(`'${owApiKey}' stored for future use.`);
       return owApiKey;
@@ -237,7 +237,7 @@ function getAppName(): string {
 //     if (entry.dt === undefined  ) return undefined;
 //
 //     const dailyDT = getDayName(entry.dt);
-//     return `On ${dialyDT} expect: ${entry.dt.clouds}`;
+//     return `On ${dailyDT} expect: ${entry.dt.clouds}`;
 //   });
 //
 //   return dailyData.toString();
