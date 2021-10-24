@@ -22,7 +22,7 @@
  * @todo cli option reset API key by deleting an re-requesting it
  */
 
-// Example weather forcast request (NB: ADD API KEY)
+// Example weather forecast request (NB: ADD API KEY)
 // curl -i -X GET "https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=<API-KEY-HERE>" -H "accept: application/json"
 //
 
@@ -36,9 +36,9 @@ import {
   isNumber,
   isString,
 } from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.107.0/datetime/mod.ts";
-import { parse } from "https://deno.land/std@0.107.0/flags/mod.ts";
-import { basename } from "https://deno.land/std@0.107.0/path/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.112.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.112.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.112.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
@@ -46,15 +46,15 @@ import { basename } from "https://deno.land/std@0.107.0/path/mod.ts";
 
 /** Define the command line argument switches and options to be used */
 const cliOpts = {
-  default: { h: false, v: false },
-  alias: { h: "help", v: "version" },
+  default: { d:false, h: false, v: false },
+  alias: { d: "delete", h: "help", v: "version" },
   stopEarly: true,
   unknown: showUnknown,
 };
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.4.2",
+  version: "0.5.0",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -64,6 +64,11 @@ const versionOptions = {
 async function getCliArgs() {
   //console.log(parse(Deno.args,cliOpts));
   const cliArgs = parse(Deno.args, cliOpts);
+
+  if (cliArgs.delete) {
+    delApiKey() ? console.log("API key deleted.") : console.log("API key not found.")
+    Deno.exit(0);
+  }
 
   if (cliArgs.help) {
     showHelp();
@@ -92,7 +97,8 @@ function showHelp() {
   console.log(`
 Usage: ${getAppName()} [switches] [arguments]
 
-[Switches]       [Arguments]   [Default Value]   [Description]               
+[Switches]       [Arguments]   [Default Value]   [Description]
+-d, --delete                        false        delete the currently stored OpenWeather API key               
 -h, --help                          false        display help information
 -v, --version                       false        display program version
 `);
@@ -301,7 +307,7 @@ if (import.meta.main) {
     console.error("\nERROR: Unable to proceed without an OpenWeather API key.");
     console.log(
       "\nFree or subscription API key options are available.\n" +
-        "Request an OpenWeather API key here: https://openweathermap.org/price",
+        "Request an OpenWeather API key here: https://openweathermap.org/price\n",
     );
     Deno.exit(1);
   }
