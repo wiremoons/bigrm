@@ -14,7 +14,7 @@
  * Application is written in TypeScript for use with the Deno runtime: https://deno.land/
  *
  * @note The program can be run with Deno using the command:
- * @code deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
+ * @code deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm bigrm.ts
  */
 
 /**
@@ -46,7 +46,7 @@ import { basename } from "https://deno.land/std@0.112.0/path/mod.ts";
 
 /** Define the command line argument switches and options to be used */
 const cliOpts = {
-  default: { d:false, h: false, v: false },
+  default: { d: false, h: false, v: false },
   alias: { d: "delete", h: "help", v: "version" },
   stopEarly: true,
   unknown: showUnknown,
@@ -54,7 +54,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.5.0",
+  version: "0.6.0",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -66,7 +66,9 @@ async function getCliArgs() {
   const cliArgs = parse(Deno.args, cliOpts);
 
   if (cliArgs.delete) {
-    delApiKey() ? console.log("API key deleted.") : console.log("API key not found.")
+    delApiKey()
+      ? console.log("API key deleted.")
+      : console.log("API key not found.");
     Deno.exit(0);
   }
 
@@ -82,8 +84,8 @@ async function getCliArgs() {
   }
 }
 
-/** Function defined in `cliOpts` so is automatically by `parse()` if an unknown command line option
- * is given by the user.
+/** Function defined in `cliOpts` so is run automatically by `parse()` if an unknown
+ * command line option is given by the user.
  * @code showUnknown(arg: string, k?: string, v?: unknown)
  */
 function showUnknown(arg: string) {
@@ -249,14 +251,27 @@ function getAppName(): string {
 //--------------------------------
 
 /**
- * Obtain OpenWeather forecast JSON data
+ * Obtain OpenWeather forecast JSON data and output to the screen
  */
 async function getWeatherJson(owUrl: string): Promise<string> {
   const res = await fetch(owUrl);
   const owJson = await res.json();
   //console.log(owJson);
 
+  // get number of weather alerts or set to zero if none found
+  let owAlterData: string = "";
   const owAlerts: number = owJson.alerts ? owJson.alerts.length : 0;
+  //console.log(`Alerts found: ${owAlerts}`);
+
+  if (owAlerts > 0) {
+    owAlterData = `\n» Alert: '${owJson.alerts[0].event}' issued by: '${
+      owJson.alerts[0].sender_name
+    }'.\n» Starting: ${
+      getDisplayDateTime(owJson.alerts[0].start)
+    } and ending: ${getDisplayDateTime(owJson.alerts[0].end)}.\n» Details: ${
+      owJson.alerts[0].description
+    }\n`;
+  }
 
   return (`
 CURRENT  WEATHER  FORECAST  DATA
@@ -275,10 +290,12 @@ CURRENT  WEATHER  FORECAST  DATA
     Cloud Cover         : ${owJson.current.clouds} %
     Average Visibility  : ${owJson.current.visibility.toLocaleString()} metres
     Temperature         : ${owJson.current.temp.toFixed(1)}°C feels like: ${
-    owJson.current.feels_like.toFixed((1))
+    owJson.current.feels_like.toFixed(1)
   }°C
-    Description         : ${owJson.current.weather[0].description ??
-    "none available"}
+    Description         : ${
+    owJson.current.weather[0].description ??
+      "none available"
+  }
     
  » Weather Outlook
     ${
@@ -293,6 +310,7 @@ CURRENT  WEATHER  FORECAST  DATA
     
  » Weather Alerts    
     Alerts issued: ${owAlerts.toString()}
+${owAlterData || ""}
     `);
 }
 
