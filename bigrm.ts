@@ -10,7 +10,9 @@
  * @date originally created: 12 Sep 2021
  * @date updated significantly: tbc
  *
- * @details Program uses the OpenWeather Application Programming Interface (API) to get the latest weather forecast for a given location in the 'big room' - aka outdoors on planet earth. The 'one call' API can be found here: https://openweathermap.org/api/one-call-api
+ * @details Program uses the OpenWeather Application Programming Interface (API) to get the latest weather forecast
+ * for a given location in the 'big room' - aka outdoors on planet earth. The 'one call' API can be found
+ * here: https://openweathermap.org/api/one-call-api
  * Application is written in TypeScript for use with the Deno runtime: https://deno.land/
  *
  * @note The program can be run with Deno using the command:
@@ -35,10 +37,10 @@ import {
   cliVersion,
   isNumber,
   isString,
-} from "https://deno.land/x/deno_mod@0.7.0/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.112.0/datetime/mod.ts";
-import { parse } from "https://deno.land/std@0.112.0/flags/mod.ts";
-import { basename } from "https://deno.land/std@0.112.0/path/mod.ts";
+} from "https://deno.land/x/deno_mod@0.7.1/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.113.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.113.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
