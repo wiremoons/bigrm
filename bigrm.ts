@@ -56,7 +56,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.0",
+  version: "0.6.1",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -260,8 +260,11 @@ async function getWeatherJson(owUrl: string): Promise<string> {
   const owJson = await res.json();
   //console.log(owJson);
 
+  // ensure weather alter data variable is available and initialised as empty
+  let owAlterData:string;
+  owAlterData = "";
+
   // get number of weather alerts or set to zero if none found
-  let owAlterData: string = "";
   const owAlerts: number = owJson.alerts ? owJson.alerts.length : 0;
   //console.log(`Alerts found: ${owAlerts}`);
 
