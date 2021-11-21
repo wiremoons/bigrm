@@ -17,6 +17,8 @@
  *
  * @note The program can be run with Deno using the command:
  * @code deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm bigrm.ts
+ * @note The program can be installed to 'DENO_INSTALL_ROOT' to using the command:
+ * @code deno install -f --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm bigrm.ts
  */
 
 /**
