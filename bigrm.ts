@@ -266,7 +266,7 @@ async function getWeatherJson(owUrl: string): Promise<string> {
     description:string;
   }
 
-  // extract all the 'AlertData' information from the array or set to ""
+  // extract of the selected OpenWeather 'AlertData' array or set to "" if none exists
   const owAlertData:Array<string> = (owAlerts > 0) ? owJson.alerts.map((alertData:AlertData ) =>{
       return `\n» Alert: '${alertData.event}' issued by: '${
           alertData.sender_name
