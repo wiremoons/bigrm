@@ -58,7 +58,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.1",
+  version: "0.6.2",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -236,19 +236,6 @@ function getAppName(): string {
   return `${basename(Deno.mainModule) ?? "UNKNOWN"}`;
 }
 
-// function extractDaily(owJson:any):string | undefined {
-//   if (!isString(owJson)) return undefined;
-//
-//   const dailyData = owJson?.daily.map((entry)=>{
-//     if (entry.dt === undefined  ) return undefined;
-//
-//     const dailyDT = getDayName(entry.dt);
-//     return `On ${dailyDT} expect: ${entry.dt.clouds}`;
-//   });
-//
-//   return dailyData.toString();
-//
-// }
 
 //--------------------------------
 // APPLICATION FUNCTIONS
@@ -263,22 +250,32 @@ async function getWeatherJson(owUrl: string): Promise<string> {
   //console.log(owJson);
 
   // ensure weather alter data variable is available and initialised as empty
-  let owAlterData:string;
-  owAlterData = "";
+  //let owAlertData:string;
+  //owAlertData = "";
 
-  // get number of weather alerts or set to zero if none found
+  // get number of weather alerts (array 'alerts') or set to zero if none found
   const owAlerts: number = owJson.alerts ? owJson.alerts.length : 0;
   //console.log(`Alerts found: ${owAlerts}`);
 
-  if (owAlerts > 0) {
-    owAlterData = `\n» Alert: '${owJson.alerts[0].event}' issued by: '${
-      owJson.alerts[0].sender_name
-    }'.\n» Starting: ${
-      getDisplayDateTime(owJson.alerts[0].start)
-    } and ending: ${getDisplayDateTime(owJson.alerts[0].end)}.\n» Details: ${
-      owJson.alerts[0].description
-    }\n`;
+  // Define the 'AlertData' to be extracted from the 'owJson.alerts' array
+  interface AlertData {
+    event:number;
+    "sender_name": string;
+    start:number;
+    end:number;
+    description:string;
   }
+
+  // extract all the 'AlertData' information from the array or set to ""
+  const owAlertData:Array<string> = (owAlerts > 0) ? owJson.alerts.map((alertData:AlertData ) =>{
+      return `\n» Alert: '${alertData.event}' issued by: '${
+          alertData.sender_name
+      }'.\n» Starting: ${
+          getDisplayDateTime(alertData.start)
+      } and ending: ${getDisplayDateTime(alertData.end)}.\n» Details: ${
+          alertData.description
+      }\n`;}) : "";
+
 
   return (`
 CURRENT  WEATHER  FORECAST  DATA
@@ -297,12 +294,8 @@ CURRENT  WEATHER  FORECAST  DATA
     Cloud Cover         : ${owJson.current.clouds} %
     Average Visibility  : ${owJson.current.visibility.toLocaleString()} metres
     Temperature         : ${owJson.current.temp.toFixed(1)}°C feels like: ${
-    owJson.current.feels_like.toFixed(1)
-  }°C
-    Description         : ${
-    owJson.current.weather[0].description ??
-      "none available"
-  }
+    owJson.current.feels_like.toFixed(1)}°C
+    Description         : ${owJson.current.weather[0].description ?? "none available"}
     
  » Weather Outlook
     ${
@@ -317,7 +310,7 @@ CURRENT  WEATHER  FORECAST  DATA
     
  » Weather Alerts    
     Alerts issued: ${owAlerts.toString()}
-${owAlterData || ""}
+${owAlertData.join("\n") || ""}
     `);
 }
 
