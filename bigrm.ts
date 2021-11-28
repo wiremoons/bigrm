@@ -39,10 +39,10 @@ import {
   cliVersion,
   isNumber,
   isString,
-} from "https://deno.land/x/deno_mod@0.7.1/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.113.0/datetime/mod.ts";
-import { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
-import { basename } from "https://deno.land/std@0.113.0/path/mod.ts";
+} from "https://deno.land/x/deno_mod@0.7.4/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.116.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.116.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.116.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
@@ -58,7 +58,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.3",
+  version: "0.6.4",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -307,7 +307,7 @@ CURRENT  WEATHER  FORECAST  DATA
     }).join("\n    ")
   }
     
- » Weather Alerts    
+ » Weather Alerts
     Alerts issued: ${owAlerts.toString()}
 ${owAlertData || ""}
     `);
