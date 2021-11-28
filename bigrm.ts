@@ -58,7 +58,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.2",
+  version: "0.6.3",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2021",
@@ -274,8 +274,7 @@ async function getWeatherJson(owUrl: string): Promise<string> {
           getDisplayDateTime(alertData.start)
       } and ending: ${getDisplayDateTime(alertData.end)}.\n» Details: ${
           alertData.description
-      }\n`;}) : "";
-
+      }\n`;}).join("\n") : "";
 
   return (`
 CURRENT  WEATHER  FORECAST  DATA
@@ -310,7 +309,7 @@ CURRENT  WEATHER  FORECAST  DATA
     
  » Weather Alerts    
     Alerts issued: ${owAlerts.toString()}
-${owAlertData.join("\n") || ""}
+${owAlertData || ""}
     `);
 }
 
