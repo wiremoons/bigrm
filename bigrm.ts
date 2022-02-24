@@ -40,9 +40,9 @@ import {
   isNumber,
   isString,
 } from "https://deno.land/x/deno_mod@0.7.4/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.116.0/datetime/mod.ts";
-import { parse } from "https://deno.land/std@0.116.0/flags/mod.ts";
-import { basename } from "https://deno.land/std@0.116.0/path/mod.ts";
+import { format, toIMF } from "https://deno.land/std@0.127.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.127.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.127.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
@@ -58,10 +58,10 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.4",
+  version: "0.6.6",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
-  crYear: "2021",
+  crYear: "2022",
 };
 
 /** obtain any command line arguments and exec them as needed */
@@ -101,6 +101,8 @@ function showUnknown(arg: string) {
 /** Help display for application called when unknown command lines options are entered */
 function showHelp() {
   console.log(`
+Application '${getAppName()}' obtains the latest weather forecast from OpenWeather.
+
 Usage: ${getAppName()} [switches] [arguments]
 
 [Switches]       [Arguments]   [Default Value]   [Description]
