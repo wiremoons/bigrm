@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --quiet --allow-read=. --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
+#!/usr/bin/env -S deno run --quiet --allow-read --allow-net=api.openweathermap.org --location https://wiremoons.com/bigrm
 /**
  * @file bigrm.ts
  * @brief Obtain the latest weather forecast from OpenWeather.
@@ -58,7 +58,7 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.6",
+  version: "0.6.7",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
   crYear: "2022",
