@@ -248,7 +248,15 @@ function getAppName(): string {
  */
 async function getWeatherJson(owUrl: string): Promise<string> {
   const res = await fetch(owUrl);
+  if (!res.ok) {
+    // convert rejected Promise to an async function
+    throw new Error(`Web site request failed: ${res.status}`);
+  }
   const owJson = await res.json();
+  if (!owJson){
+    // convert rejected Promise to an async function
+    throw new Error(`JSON extraction failed: ${owJson.errorText}`);
+  }
   //console.log(owJson);
 
   // ensure weather alter data variable is available and initialised as empty
@@ -337,7 +345,7 @@ if (import.meta.main) {
 
   // create the final weather request url
   const owUrl =
-    `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
+    `https://api.openweathermap.og/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
 
   console.log(`${await getWeatherJson(owUrl)}`);
 }
