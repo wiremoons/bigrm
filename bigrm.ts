@@ -24,14 +24,16 @@
 /**
  * @note The following application enhancements are anticipated:
  * @todo cli option reset API key by deleting an re-requesting it
+ * @todo Ability to request and use a specific location instead of the coded one
+ * @todo Check for API key in both and environment variable + local storage
+
  */
 
 // Example weather forecast request (NB: ADD API KEY)
 // curl -i -X GET "https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=<API-KEY-HERE>" -H "accept: application/json"
 //
 
-// check for API key: env + local storage
-
+// 
 //--------------------------------
 // MODULE IMPORTS
 //--------------------------------
@@ -40,9 +42,9 @@ import {
   isNumber,
   isString,
 } from "https://deno.land/x/deno_mod@0.7.4/mod.ts";
-import { format, toIMF } from "https://deno.land/std@0.127.0/datetime/mod.ts";
-import { parse } from "https://deno.land/std@0.127.0/flags/mod.ts";
-import { basename } from "https://deno.land/std@0.127.0/path/mod.ts";
+import { format } from "https://deno.land/std@0.210.0/datetime/mod.ts";
+import { parse } from "https://deno.land/std@0.210.0/flags/mod.ts";
+import { basename } from "https://deno.land/std@0.210.0/path/mod.ts";
 
 //--------------------------------
 // COMMAND LINE ARGS FUNCTIONS
@@ -58,10 +60,10 @@ const cliOpts = {
 
 /** define options for `cliVersion()` function for application version data */
 const versionOptions = {
-  version: "0.6.7",
+  version: "0.6.8",
   copyrightName: "Simon Rowe",
   licenseUrl: "https://github.com/wiremoons/bigrm/",
-  crYear: "2022",
+  crYear: "2022-2024",
 };
 
 /** obtain any command line arguments and exec them as needed */
@@ -154,7 +156,8 @@ function getApiKey(): string | undefined {
       return (localStorage.getItem("owApiKey") ?? undefined);
     } else {
       // prompt the use to enter their API instead
-      return askUserForApiKey();
+      const apiKey = askUserForApiKey()
+      return apiKey.length > 0 ? apiKey : undefined;
     }
   } catch (err) {
     console.error(`\nERROR: trying to retrieved OpenWeather API key\n`);
@@ -174,9 +177,9 @@ function getApiKey(): string | undefined {
 
 /**
  * Request the users enters their OpenWeather API key and if valid store it in `localStorage`
- * @returns owApiKey as the users OpenWeather API key or `undefined` on failure
+ * @returns owApiKey as the users OpenWeather API key or "" on failure
  */
-function askUserForApiKey(): string | undefined {
+function askUserForApiKey(): string {
   if (confirm(`Do you have a valid OpenWeather API key [y/N] ?`)) {
     const owApiKey = prompt("Please enter your API key:");
     if (isString(owApiKey) && owApiKey.length > 0 && setApiKeyId(owApiKey)) {
@@ -184,10 +187,10 @@ function askUserForApiKey(): string | undefined {
       return owApiKey;
     } else {
       console.log(`Invalid key entered as: '${owApiKey}'`);
-      return undefined;
+      return "";
     }
   }
-  return undefined;
+  return "";
 }
 
 /** Convert epoch date to date and time for display in output as a string */
@@ -197,7 +200,7 @@ function getDisplayDateTime(epochTime: number): string {
   if (isNumber(epochTime)) {
     dateUTC = new Date(epochTime * 1000);
     //console.log(`Converted date to UTC format: ${dateUTC}`);
-    return toIMF(new Date(dateUTC));
+    return dateUTC.toUTCString();
     //console.log(`Final data and time format: ${toIMF(new Date(dateUTC))}`);
   } else {
     return "UNKNOWN";
@@ -247,15 +250,16 @@ function getAppName(): string {
  * Obtain OpenWeather forecast JSON data and output to the screen
  */
 async function getWeatherJson(owUrl: string): Promise<string> {
+  // wrap fetch below in a try block
   const res = await fetch(owUrl);
   if (!res.ok) {
-    // convert rejected Promise to an async function
-    throw new Error(`Web site request failed: ${res.status}`);
+    // create a rejected Promise
+    return Promise.reject(new Error(`Web site request failed: ${res.status}`));
   }
-  const owJson = await res.json();
+  const owJson = await res?.json();
   if (!owJson){
-    // convert rejected Promise to an async function
-    throw new Error(`JSON extraction failed: ${owJson.errorText}`);
+    // create a rejected Promise
+    return Promise.reject(new Error(`JSON extraction failed: ${owJson.errorText}`));
   }
   //console.log(owJson);
 
@@ -345,7 +349,7 @@ if (import.meta.main) {
 
   // create the final weather request url
   const owUrl =
-    `https://api.openweathermap.og/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
+    `https://api.openweathermap.org/data/2.5/onecall?lat=51.419212&lon=-3.291481&exclude=minutely,hourly&units=metric&appid=${owApiKey}`;
 
   console.log(`${await getWeatherJson(owUrl)}`);
 }
